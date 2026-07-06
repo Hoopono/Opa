@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rota Cambial</title>
+<style>
+  :root{
+    --ink:#050B14;
+    --paper:#FFFFFF;
+    --blue:#0B3D91;
+    --blue-deep:#062454;
+    --line:rgba(5,11,20,0.12);
+    --gray:#5A6472;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family: 'Iowan Old Style','Georgia',serif;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Intro animation ---------- */
+  #intro{
+    position:fixed;
+    inset:0;
+    background:var(--paper);
+    z-index:999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #intro svg{
+    width:min(90vw, 720px);
+    height:auto;
+    overflow:visible;
+  }
+  #intro path.trail{
+    fill:none;
+    stroke:var(--blue);
+    stroke-width:1.5;
+    stroke-linecap:round;
+    opacity:0.5;
+  }
+  #intro .dot{ fill:var(--ink); }
+  #intro .label{
+    font-family:'Courier New',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    fill:var(--gray);
+  }
+  #plane{ transform-origin:center; }
+  #intro.hide{ animation:fadeOut .5s ease forwards; }
+  @keyframes fadeOut{ to{opacity:0; visibility:hidden;} }
+
+  body.pre-load .wrap{ opacity:0; }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:32px 24px 80px;
+    transition:opacity .6s ease;
+  }
+
+  /* ---------- Top bar / language switcher ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:24px;
+  }
+  .langs{
+    display:flex;
+    gap:2px;
+    font-family:'Courier New',monospace;
+    font-size:12px;
+  }
+  .langs button{
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--gray);
+    padding:6px 10px;
+    cursor:pointer;
+    letter-spacing:.05em;
+  }
+  .langs button:first-child{ border-radius:6px 0 0 6px; }
+  .langs button:last-child{ border-radius:0 6px 6px 0; }
+  .langs button + button{ border-left:none; }
+  .langs button.active{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  .langs button{ transition:background .2s ease, color .2s ease, transform .15s ease; }
+  .langs button:hover{ color:var(--ink); }
+  .langs button:active{ transform:scale(0.94); }
+
+  /* ---------- Scroll-reveal ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* ---------- Page ---------- */
+  .eyebrow{
+    font-family:'Courier New',monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--blue);
+    margin:0;
+  }
+  h1{
+    font-size:40px;
+    line-height:1.08;
+    margin:14px 0 6px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{ font-style:italic; color:var(--blue); }
+  .sub{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:15.5px;
+    color:var(--gray);
+    max-width:46ch;
+    margin:0 0 40px;
+  }
+  .rule{ height:1px; background:var(--line); margin:36px 0; }
+  .steps{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    margin-bottom:44px;
+  }
+  .step{
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:14px;
+    align-items:start;
+    padding:10px;
+    margin:-10px;
+    border-radius:10px;
+    transition:background .25s ease, transform .25s ease;
+  }
+  .step:hover{
+    background:rgba(11,61,145,0.045);
+    transform:translateX(3px);
+  }
+  .step .n{
+    font-family:'Courier New',monospace;
+    font-size:13px;
+    color:var(--paper);
+    background:var(--ink);
+    border-radius:50%;
+    width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .25s ease, background .25s ease;
+  }
+  .step:hover .n{
+    background:var(--blue);
+    transform:scale(1.1);
+  }
+  .step p{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    margin:0;
+    font-size:15px;
+    color:var(--blue-deep);
+    padding-top:3px;
+  }
+  .step strong{ color:var(--ink); }
+
+  /* ---------- Category selector ---------- */
+  .category-label{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--blue);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .category{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .category button{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    padding:16px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease, transform .15s ease, box-shadow .2s ease;
+  }
+  .category button:hover{
+    border-color:var(--ink);
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px rgba(5,11,20,0.08);
+  }
+  .category button:active{
+    transform:translateY(0) scale(0.98);
+  }
+  .category button.active{
+    border-color:var(--ink);
+    background:var(--ink);
+    color:#fff;
+    transform:translateY(0);
+  }
+
+  form{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px 24px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .field{ margin-bottom:18px; }
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--blue);
+    margin-bottom:6px;
+    text-transform:uppercase;
+  }
+  input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+    background:#fdfdfd;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(11,61,145,0.12);
+  }
+
+  button.submit{
+    width:100%;
+    margin-top:6px;
+    padding:15px;
+    border:none;
+    border-radius:9px;
+    background:var(--ink);
+    color:#fff;
+    font-size:16px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    transition:background .2s ease, transform .15s ease, box-shadow .2s ease;
+  }
+  button.submit:hover{
+    background:var(--blue-deep);
+    transform:translateY(-1px);
+    box-shadow:0 8px 20px rgba(6,36,84,0.25);
+  }
+  button.submit:active{
+    transform:translateY(0) scale(0.98);
+    box-shadow:none;
+  }
+
+  .foot-note{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--gray);
+    margin-top:16px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+
+  .disclaimer{
+    margin-top:40px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:12.5px;
+    color:var(--gray);
+    line-height:1.6;
+  }
+
+  /* ---------- Trust footer ---------- */
+  footer{
+    background:var(--ink);
+    color:#fff;
+    margin-top:40px;
+    padding:44px 24px 34px;
+  }
+  .footer-inner{
+    max-width:640px;
+    margin:0 auto;
+  }
+  .trust-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:18px;
+    margin-bottom:32px;
+  }
+  .trust-item{
+    text-align:left;
+    padding:14px 4px;
+    border-radius:10px;
+    transition:transform .25s ease, background .25s ease;
+  }
+  .trust-item:hover{
+    background:rgba(255,255,255,0.05);
+    transform:translateY(-3px);
+  }
+  .trust-icon{
+    width:30px;height:30px;
+    margin-bottom:10px;
+    stroke:#fff;
+    fill:none;
+    stroke-width:1.4;
+    transition:transform .3s ease;
+  }
+  .trust-item:hover .trust-icon{
+    transform:scale(1.12) rotate(-4deg);
+  }
+  .trust-title{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .trust-desc{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:12.5px;
+    color:rgba(255,255,255,0.6);
+    line-height:1.5;
+    margin:0;
+  }
+  .footer-rule{
+    height:1px;
+    background:rgba(255,255,255,0.12);
+    margin-bottom:20px;
+  }
+  .footer-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    font-family:'Courier New',monospace;
+    font-size:11px;
+    letter-spacing:.05em;
+    color:rgba(255,255,255,0.45);
+  }
+
+  @media (max-width:480px){
+    h1{ font-size:32px; }
+    .wrap{ padding:24px 18px 60px; }
+    .trust-grid{ grid-template-columns:1fr; gap:14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #intro{ display:none; }
+    body.pre-load .wrap{ opacity:1; }
+  }
+</style>
+</head>
+<body class="pre-load">
+
+<div id="intro">
+  <svg viewBox="0 0 600 240">
+    <path class="trail" id="trailPath" d="M 40 190 Q 300 20 560 190" />
+    <circle class="dot" cx="40" cy="190" r="3"></circle>
+    <circle class="dot" cx="560" cy="190" r="3"></circle>
+    <text class="label" x="30" y="215">A</text>
+    <text class="label" x="552" y="215">B</text>
+    <g id="plane">
+      <path d="M0,-7 L5,4 L0,2 L-5,4 Z" fill="#050B14"></path>
+    </g>
+  </svg>
+</div>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="eyebrow">Rota Cambial</div>
+    <div class="langs">
+      <button data-lang="pt" class="active">PT</button>
+      <button data-lang="es">ES</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <h1 data-i18n-html="h1">Envie dinheiro pro exterior <em>você mesmo</em>,<br>com taxa justa.</h1>
+  <p class="sub" data-i18n="sub">Sem depender de banco, sem taxa escondida. Eu te ensino a abrir e operar sua própria conta Wise — a transferência sai sempre da sua conta, no seu controle.</p>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="n">1</div>
+      <p><strong data-i18n="step1_strong">Preenche o formulário</strong><span data-i18n="step1_rest"> abaixo com seus dados e o que você precisa resolver.</span></p>
+    </div>
+    <div class="step reveal">
+      <div class="n">2</div>
+      <p><strong data-i18n="step2_strong">Você recebe um diagnóstico rápido</strong><span data-i18n="step2_rest"> — se a Wise resolve seu caso e como funciona a abertura.</span></p>
+    </div>
+    <div class="step reveal">
+      <div class="n">3</div>
+      <p><strong data-i18n="step3_strong">Consultoria de setup</strong><span data-i18n="step3_rest"> — te acompanho abrindo a conta e fazendo a primeira operação com segurança.</span></p>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="category-label reveal" data-i18n="category_label">O que você deseja fazer?</div>
+  <div class="category reveal">
+    <button type="button" data-direction="enviar" class="active" data-i18n="cat_enviar">Quero enviar</button>
+    <button type="button" data-direction="receber" data-i18n="cat_receber">Quero receber</button>
+  </div>
+
+  <form id="rotaForm" class="reveal">
+    <div class="field">
+      <label for="nome" data-i18n="label_nome">Nome completo</label>
+      <input id="nome" type="text" data-i18n-placeholder="ph_nome" placeholder="Como você se chama" required>
+    </div>
+
+    <div class="field">
+      <label for="cidade" data-i18n="label_cidade">Cidade / estado onde mora</label>
+      <input id="cidade" type="text" data-i18n-placeholder="ph_cidade" placeholder="Ex: Concórdia, SC" required>
+    </div>
+
+    <div class="field">
+      <label for="pais" id="paisLabel" data-i18n="label_pais_enviar">País pra onde pretende enviar</label>
+      <input id="pais" type="text" data-i18n-placeholder="ph_pais" placeholder="Ex: Portugal, EUA, Argentina..." required>
+    </div>
+
+    <div class="field">
+      <label for="valor" data-i18n="label_valor">Valor aproximado que costuma movimentar</label>
+      <input id="valor" type="text" data-i18n-placeholder="ph_valor" placeholder="Ex: R$ 3.000 por mês" required>
+    </div>
+
+    <button type="submit" class="submit" data-i18n="submit_btn">Enviar pelo WhatsApp</button>
+    <p class="foot-note" data-i18n="foot_note">Abre o WhatsApp com sua mensagem já preenchida</p>
+  </form>
+
+  <p class="disclaimer" data-i18n="disclaimer">Rota Cambial presta consultoria e acompanhamento para você abrir e operar sua própria conta internacional. Não recebemos, retemos ou transferimos valores de terceiros — toda operação é feita diretamente por você, na sua conta.</p>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="trust-grid">
+      <div class="trust-item reveal">
+        <svg class="trust-icon" viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z" stroke-linejoin="round"/></svg>
+        <p class="trust-title" data-i18n="trust1_title">Contato direto</p>
+        <p class="trust-desc" data-i18n="trust1_desc">Falo com você mesmo, sem robôs nem fila de atendimento.</p>
+      </div>
+      <div class="trust-item reveal">
+        <svg class="trust-icon" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" stroke-linejoin="round"/></svg>
+        <p class="trust-title" data-i18n="trust2_title">Privacidade segura</p>
+        <p class="trust-desc" data-i18n="trust2_desc">Seus dados são usados só pra te atender e nunca compartilhados.</p>
+      </div>
+      <div class="trust-item reveal">
+        <svg class="trust-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke-linecap="round"/></svg>
+        <p class="trust-title" data-i18n="trust3_title">Sem intermediários</p>
+        <p class="trust-desc" data-i18n="trust3_desc">A transferência sai da sua conta. Você no controle, do início ao fim.</p>
+      </div>
+    </div>
+    <div class="footer-rule"></div>
+    <div class="footer-bottom">
+      <span>ROTA CAMBIAL</span>
+      <span data-i18n="footer_tag">CONSULTORIA · CÂMBIO · WISE</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---------- Translations ----------
+  const i18n = {
+    pt: {
+      h1: 'Envie dinheiro pro exterior <em>você mesmo</em>,<br>com taxa justa.',
+      sub: 'Sem depender de banco, sem taxa escondida. Eu te ensino a abrir e operar sua própria conta Wise — a transferência sai sempre da sua conta, no seu controle.',
+      step1_strong: 'Preenche o formulário',
+      step1_rest: ' abaixo com seus dados e o que você precisa resolver.',
+      step2_strong: 'Você recebe um diagnóstico rápido',
+      step2_rest: ' — se a Wise resolve seu caso e como funciona a abertura.',
+      step3_strong: 'Consultoria de setup',
+      step3_rest: ' — te acompanho abrindo a conta e fazendo a primeira operação com segurança.',
+      category_label: 'O que você deseja fazer?',
+      cat_enviar: 'Quero enviar',
+      cat_receber: 'Quero receber',
+      label_nome: 'Nome completo',
+      ph_nome: 'Como você se chama',
+      label_cidade: 'Cidade / estado onde mora',
+      ph_cidade: 'Ex: Concórdia, SC',
+      label_pais_enviar: 'País pra onde pretende enviar',
+      label_pais_receber: 'País de onde vem o dinheiro',
+      ph_pais: 'Ex: Portugal, EUA, Argentina...',
+      label_valor: 'Valor aproximado que costuma movimentar',
+      ph_valor: 'Ex: R$ 3.000 por mês',
+      submit_btn: 'Enviar pelo WhatsApp',
+      foot_note: 'Abre o WhatsApp com sua mensagem já preenchida',
+      disclaimer: 'Rota Cambial presta consultoria e acompanhamento para você abrir e operar sua própria conta internacional. Não recebemos, retemos ou transferimos valores de terceiros — toda operação é feita diretamente por você, na sua conta.',
+      wa_greeting: 'Olá! Quero saber mais sobre o Rota Cambial 🌍',
+      wa_direction: 'O que deseja',
+      wa_direction_enviar: 'Enviar dinheiro',
+      wa_direction_receber: 'Receber dinheiro',
+      wa_nome: 'Nome completo',
+      wa_cidade: 'Cidade/estado',
+      wa_pais_enviar: 'País de destino',
+      wa_pais_receber: 'País de origem',
+      wa_valor: 'Valor que costumo movimentar',
+      trust1_title: 'Contato direto',
+      trust1_desc: 'Falo com você mesmo, sem robôs nem fila de atendimento.',
+      trust2_title: 'Privacidade segura',
+      trust2_desc: 'Seus dados são usados só pra te atender e nunca compartilhados.',
+      trust3_title: 'Sem intermediários',
+      trust3_desc: 'A transferência sai da sua conta. Você no controle, do início ao fim.',
+      footer_tag: 'CONSULTORIA · CÂMBIO · WISE'
+    },
+    es: {
+      h1: 'Envía dinero al exterior <em>tú mismo</em>,<br>con una tarifa justa.',
+      sub: 'Sin depender de bancos, sin comisiones ocultas. Te enseño a abrir y operar tu propia cuenta Wise — la transferencia siempre sale desde tu cuenta, bajo tu control.',
+      step1_strong: 'Completa el formulario',
+      step1_rest: ' de abajo con tus datos y lo que necesitas resolver.',
+      step2_strong: 'Recibes un diagnóstico rápido',
+      step2_rest: ' — si Wise resuelve tu caso y cómo funciona la apertura.',
+      step3_strong: 'Asesoría de configuración',
+      step3_rest: ' — te acompaño abriendo la cuenta y haciendo la primera operación con seguridad.',
+      category_label: '¿Qué deseas hacer?',
+      cat_enviar: 'Quiero enviar',
+      cat_receber: 'Quiero recibir',
+      label_nome: 'Nombre completo',
+      ph_nome: 'Cómo te llamas',
+      label_cidade: 'Ciudad / provincia donde vives',
+      ph_cidade: 'Ej: Buenos Aires',
+      label_pais_enviar: 'País al que deseas enviar',
+      label_pais_receber: 'País de origen del dinero',
+      ph_pais: 'Ej: Portugal, EE. UU., Brasil...',
+      label_valor: 'Monto aproximado que sueles mover',
+      ph_valor: 'Ej: 500 USD al mes',
+      submit_btn: 'Enviar por WhatsApp',
+      foot_note: 'Abre WhatsApp con tu mensaje ya redactado',
+      disclaimer: 'Rota Cambial ofrece asesoría y acompañamiento para que abras y operes tu propia cuenta internacional. No recibimos, retenemos ni transferimos fondos de terceros — toda operación la realizas tú directamente, en tu cuenta.',
+      wa_greeting: '¡Hola! Quiero saber más sobre Rota Cambial 🌍',
+      wa_direction: 'Qué deseas',
+      wa_direction_enviar: 'Enviar dinero',
+      wa_direction_receber: 'Recibir dinero',
+      wa_nome: 'Nombre completo',
+      wa_cidade: 'Ciudad/provincia',
+      wa_pais_enviar: 'País de destino',
+      wa_pais_receber: 'País de origen',
+      wa_valor: 'Monto que suelo mover',
+      trust1_title: 'Contacto directo',
+      trust1_desc: 'Hablas conmigo directamente, sin bots ni fila de espera.',
+      trust2_title: 'Privacidad segura',
+      trust2_desc: 'Tus datos se usan solo para atenderte y nunca se comparten.',
+      trust3_title: 'Sin intermediarios',
+      trust3_desc: 'La transferencia sale de tu cuenta. Tú tienes el control de principio a fin.',
+      footer_tag: 'ASESORÍA · CAMBIO · WISE'
+    },
+    en: {
+      h1: 'Send money abroad <em>yourself</em>,<br>with a fair rate.',
+      sub: 'No banks, no hidden fees. I teach you to open and run your own Wise account — the transfer always goes out from your own account, under your control.',
+      step1_strong: 'Fill out the form',
+      step1_rest: ' below with your details and what you need help with.',
+      step2_strong: 'Get a quick assessment',
+      step2_rest: ' — whether Wise fits your case and how the setup works.',
+      step3_strong: 'Setup consulting',
+      step3_rest: ' — I guide you through opening the account and making your first transfer safely.',
+      category_label: 'What do you want to do?',
+      cat_enviar: 'I want to send',
+      cat_receber: 'I want to receive',
+      label_nome: 'Full name',
+      ph_nome: 'Your full name',
+      label_cidade: 'City / state where you live',
+      ph_cidade: 'e.g. Miami, FL',
+      label_pais_enviar: 'Country you want to send to',
+      label_pais_receber: 'Country the money is coming from',
+      ph_pais: 'e.g. Portugal, USA, Brazil...',
+      label_valor: 'Approximate amount you usually move',
+      ph_valor: 'e.g. $500 per month',
+      submit_btn: 'Send via WhatsApp',
+      foot_note: 'Opens WhatsApp with your message already filled in',
+      disclaimer: 'Rota Cambial provides consulting and guidance so you can open and run your own international account. We never receive, hold, or transfer funds on behalf of others — every operation is carried out directly by you, in your own account.',
+      wa_greeting: 'Hi! I want to know more about Rota Cambial 🌍',
+      wa_direction: 'What you want',
+      wa_direction_enviar: 'Send money',
+      wa_direction_receber: 'Receive money',
+      wa_nome: 'Full name',
+      wa_cidade: 'City/state',
+      wa_pais_enviar: 'Destination country',
+      wa_pais_receber: 'Origin country',
+      wa_valor: 'Amount usually moved',
+      trust1_title: 'Direct contact',
+      trust1_desc: 'You talk to me directly — no bots, no waiting queue.',
+      trust2_title: 'Secure privacy',
+      trust2_desc: 'Your data is only used to help you, never shared with anyone.',
+      trust3_title: 'No middlemen',
+      trust3_desc: 'The transfer goes out from your own account. You stay in control, start to finish.',
+      footer_tag: 'CONSULTING · FX · WISE'
+    }
+  };
+
+  let currentLang = 'pt';
+  let direction = 'enviar';
+
+  function applyLang(lang){
+    currentLang = lang;
+    const dict = i18n[lang];
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key] !== undefined) el.textContent = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if (dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (dict[key] !== undefined) el.placeholder = dict[key];
+    });
+
+    document.querySelectorAll('.langs button').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+    });
+
+    updatePaisLabel();
+  }
+
+  function updatePaisLabel(){
+    const dict = i18n[currentLang];
+    const label = document.getElementById('paisLabel');
+    label.textContent = direction === 'enviar' ? dict.label_pais_enviar : dict.label_pais_receber;
+  }
+
+  document.querySelectorAll('.langs button').forEach(btn => {
+    btn.addEventListener('click', () => applyLang(btn.getAttribute('data-lang')));
+  });
+
+  document.querySelectorAll('.category button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      direction = btn.getAttribute('data-direction');
+      document.querySelectorAll('.category button').forEach(b => b.classList.toggle('active', b === btn));
+      updatePaisLabel();
+    });
+  });
+
+  // ---------- Intro plane animation ----------
+  (function(){
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const intro = document.getElementById('intro');
+    const body = document.body;
+
+    if (reduceMotion) {
+      body.classList.remove('pre-load');
+      intro.remove();
+      return;
+    }
+
+    const path = document.getElementById('trailPath');
+    const plane = document.getElementById('plane');
+    const trailLen = path.getTotalLength();
+
+    path.style.strokeDasharray = trailLen;
+    path.style.strokeDashoffset = trailLen;
+
+    const duration = 1600;
+    let start = null;
+
+    function frame(ts){
+      if (!start) start = ts;
+      const t = Math.min((ts - start) / duration, 1);
+      const eased = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
+
+      const point = path.getPointAtLength(eased * trailLen);
+      const aheadPoint = path.getPointAtLength(Math.min(eased * trailLen + 1, trailLen));
+      const angle = Math.atan2(aheadPoint.y - point.y, aheadPoint.x - point.x) * 180 / Math.PI + 90;
+
+      plane.setAttribute('transform', `translate(${point.x}, ${point.y}) rotate(${angle})`);
+      path.style.strokeDashoffset = trailLen - (eased * trailLen);
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        body.classList.remove('pre-load');
+        setTimeout(() => {
+          intro.classList.add('hide');
+          setTimeout(() => intro.remove(), 550);
+        }, 200);
+      }
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  // ---------- Scroll reveal ----------
+  (function(){
+    const reveals = document.querySelectorAll('.reveal');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion) {
+      reveals.forEach(el => el.classList.add('visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 70);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach(el => observer.observe(el));
+  })();
+
+  // ---------- Form -> WhatsApp ----------
+  // Troque pelo número real, formato internacional sem espaços/símbolos: 55DDDNUMERO
+  const WHATSAPP_NUMBER = "5549900000000";
+
+  document.getElementById('rotaForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const dict = i18n[currentLang];
+
+    const nome = document.getElementById('nome').value.trim();
+    const cidade = document.getElementById('cidade').value.trim();
+    const pais = document.getElementById('pais').value.trim();
+    const valor = document.getElementById('valor').value.trim();
+    const paisLabel = direction === 'enviar' ? dict.wa_pais_enviar : dict.wa_pais_receber;
+    const directionLabel = direction === 'enviar' ? dict.wa_direction_enviar : dict.wa_direction_receber;
+
+    const msg =
+`${dict.wa_greeting}
+
+${dict.wa_direction}: ${directionLabel}
+${dict.wa_nome}: ${nome}
+${dict.wa_cidade}: ${cidade}
+${paisLabel}: ${pais}
+${dict.wa_valor}: ${valor}`;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  });
+</script>
+
+</body>
+</html>
