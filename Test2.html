@@ -6,9 +6,9 @@
     <title>International Transfers</title>
     
     <!-- Fuentes de Google -->
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -75,6 +75,7 @@
 
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
+            .lang-selector { align-self: center; }
         }
 
         .info-card, .form-card {
@@ -188,6 +189,23 @@
 
         input:focus { border-color: var(--accent-color); }
 
+        input.invalid { border-color: #e15c5c; }
+
+        .error-msg {
+            color: #e15c5c;
+            font-size: 12px;
+            margin-top: -4px;
+            display: none;
+        }
+
+        .error-msg.show { display: block; }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            animation: none;
+        }
+
         .btn-next, .btn-submit {
             width: 100%;
             padding: 14px;
@@ -240,9 +258,9 @@
 <body>
 
     <div class="lang-selector">
-        <button class="lang-btn active" onclick="changeLanguage('es')">ES</button>
-        <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
-        <button class="lang-btn" onclick="changeLanguage('pt')">PT</button>
+        <button class="lang-btn active" onclick="changeLanguage('es')">🇪🇸 ES</button>
+        <button class="lang-btn" onclick="changeLanguage('en')">🇺🇸 EN</button>
+        <button class="lang-btn" onclick="changeLanguage('pt')">🇧🇷 PT</button>
     </div>
 
     <div class="container">
@@ -283,20 +301,24 @@
                     <div class="input-group">
                         <label id="lbl-s-name">Nombre completo</label>
                         <input type="text" id="s_name" required placeholder="Ej. Juan Pérez">
+                        <span class="error-msg" id="err-s-name"></span>
                     </div>
                     <div class="input-group">
                         <label id="lbl-s-date">Fecha de nacimiento</label>
                         <input type="date" id="s_date" required>
+                        <span class="error-msg" id="err-s-date"></span>
                     </div>
                     <div class="input-group">
                         <label id="lbl-s-city">Ciudad y país de residencia</label>
                         <input type="text" id="s_city" required placeholder="Ej. Madrid, España">
+                        <span class="error-msg" id="err-s-city"></span>
                     </div>
                     <div class="input-group">
                         <label id="lbl-s-amount">Monto que deseas enviar</label>
-                        <input type="number" id="s_amount" required placeholder="Ej. 500">
+                        <input type="number" id="s_amount" required min="1" placeholder="Ej. 500">
+                        <span class="error-msg" id="err-s-amount"></span>
                     </div>
-                    <button type="button" class="btn-next" onclick="switchTab('receiver')" id="btn-next-txt">Siguiente paso →</button>
+                    <button type="button" class="btn-next" onclick="goToReceiver()" id="btn-next-txt">Siguiente paso →</button>
                 </div>
 
                 <!-- Pestaña 2: Destinatario -->
@@ -304,13 +326,15 @@
                     <div class="input-group">
                         <label id="lbl-r-name">Nombre completo del destinatario</label>
                         <input type="text" id="r_name" required placeholder="Ej. María López">
+                        <span class="error-msg" id="err-r-name"></span>
                     </div>
                     <div class="input-group">
                         <label id="lbl-r-country">País de destino del dinero</label>
                         <input type="text" id="r_country" required placeholder="Ej. Buenos Aires, Argentina">
+                        <span class="error-msg" id="err-r-country"></span>
                     </div>
                     
-                    <button type="submit" class="btn-submit">
+                    <button type="submit" class="btn-submit" id="submitBtn">
                         <svg class="whatsapp-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.819 9.819 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.45 0-2.88-.38-4.13-1.11l-.3-.18l-3.07.81l.83-2.99l-.2-.32a8.188 8.188 0 0 1-1.25-4.27c0-4.54 3.7-8.23 8.23-8.23m-3.9 4.3c-.2-.44-.4-.45-.59-.45c-.15 0-.32-.02-.5-.02c-.17 0-.46.06-.7.33c-.24.26-.92.9-.92 2.2s.95 2.56 1.08 2.74c.13.17 1.87 2.85 4.53 4c.63.27 1.13.44 1.51.56c.64.2 1.22.17 1.67.1c.51-.07 1.57-.64 1.79-1.26c.22-.61.22-1.14.15-1.25c-.06-.12-.25-.18-.53-.32c-.28-.14-1.65-.81-1.91-.9c-.25-.1-.44-.14-.63.14c-.18.27-.72.9-.88 1.08c-.16.18-.33.2-.61.06c-.28-.14-1.18-.44-2.25-1.39c-.83-.74-1.39-1.65-1.55-1.93c-.16-.28-.02-.43.12-.57c.13-.12.28-.33.42-.49c.14-.16.19-.28.29-.46c.09-.19.05-.35-.02-.5c-.07-.15-.59-1.42-.81-1.95"/></svg>
                         <span id="btn-submit-txt">Enviar datos y cotizar por WhatsApp</span>
                     </button>
@@ -340,7 +364,11 @@
                 lblRName: "Nombre completo del destinatario",
                 lblRCountry: "País de destino del dinero",
                 btnNext: "Siguiente paso →",
-                btnSubmit: "Enviar datos y cotizar por WhatsApp"
+                btnSubmit: "Enviar datos y cotizar por WhatsApp",
+                btnSending: "Redirigiendo a WhatsApp...",
+                errRequired: "Este campo es obligatorio",
+                errAmount: "Ingresa un monto válido mayor a 0",
+                errAge: "Debes ser mayor de 18 años"
             },
             en: {
                 welcome: "📌 WELCOME",
@@ -362,7 +390,11 @@
                 lblRName: "Recipient's full name",
                 lblRCountry: "Destination country",
                 btnNext: "Next step →",
-                btnSubmit: "Send data and get quote on WhatsApp"
+                btnSubmit: "Send data and get quote on WhatsApp",
+                btnSending: "Redirecting to WhatsApp...",
+                errRequired: "This field is required",
+                errAmount: "Enter a valid amount greater than 0",
+                errAge: "You must be over 18 years old"
             },
             pt: {
                 welcome: "📌 BEM-VINDO(A)",
@@ -384,11 +416,18 @@
                 lblRName: "Nome completo do destinatário",
                 lblRCountry: "País de destino do dinheiro",
                 btnNext: "Próximo passo →",
-                btnSubmit: "Enviar dados e cotar pelo WhatsApp"
+                btnSubmit: "Enviar dados e cotar pelo WhatsApp",
+                btnSending: "Redirecionando para o WhatsApp...",
+                errRequired: "Este campo é obrigatório",
+                errAmount: "Insira um valor válido maior que 0",
+                errAge: "Você deve ter mais de 18 anos"
             }
         };
 
+        let currentLang = 'es';
+
         function changeLanguage(lang) {
+            currentLang = lang;
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
@@ -433,9 +472,127 @@
             }
         }
 
+        function markError(inputId, errId, show) {
+            const input = document.getElementById(inputId);
+            const err = document.getElementById(errId);
+            if (show) {
+                input.classList.add('invalid');
+                err.classList.add('show');
+            } else {
+                input.classList.remove('invalid');
+                err.classList.remove('show');
+            }
+        }
+
+        function setErrorText(errId, text) {
+            document.getElementById(errId).innerText = text;
+        }
+
+        // Valida los 4 campos de la pestaña Remitente. Devuelve true si todo está OK.
+        function validateSenderTab() {
+            const t = translations[currentLang];
+            let valid = true;
+
+            const sName = document.getElementById('s_name');
+            const sDate = document.getElementById('s_date');
+            const sCity = document.getElementById('s_city');
+            const sAmount = document.getElementById('s_amount');
+
+            if (!sName.value.trim()) {
+                setErrorText('err-s-name', t.errRequired);
+                markError('s_name', 'err-s-name', true);
+                valid = false;
+            } else {
+                markError('s_name', 'err-s-name', false);
+            }
+
+            if (!sDate.value) {
+                setErrorText('err-s-date', t.errRequired);
+                markError('s_date', 'err-s-date', true);
+                valid = false;
+            } else {
+                const birthDate = new Date(sDate.value);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+                if (age < 18) {
+                    setErrorText('err-s-date', t.errAge);
+                    markError('s_date', 'err-s-date', true);
+                    valid = false;
+                } else {
+                    markError('s_date', 'err-s-date', false);
+                }
+            }
+
+            if (!sCity.value.trim()) {
+                setErrorText('err-s-city', t.errRequired);
+                markError('s_city', 'err-s-city', true);
+                valid = false;
+            } else {
+                markError('s_city', 'err-s-city', false);
+            }
+
+            if (!sAmount.value || parseFloat(sAmount.value) <= 0) {
+                setErrorText('err-s-amount', t.errAmount);
+                markError('s_amount', 'err-s-amount', true);
+                valid = false;
+            } else {
+                markError('s_amount', 'err-s-amount', false);
+            }
+
+            return valid;
+        }
+
+        // Valida los 2 campos de la pestaña Destinatario. Devuelve true si todo está OK.
+        function validateReceiverTab() {
+            const t = translations[currentLang];
+            let valid = true;
+
+            const rName = document.getElementById('r_name');
+            const rCountry = document.getElementById('r_country');
+
+            if (!rName.value.trim()) {
+                setErrorText('err-r-name', t.errRequired);
+                markError('r_name', 'err-r-name', true);
+                valid = false;
+            } else {
+                markError('r_name', 'err-r-name', false);
+            }
+
+            if (!rCountry.value.trim()) {
+                setErrorText('err-r-country', t.errRequired);
+                markError('r_country', 'err-r-country', true);
+                valid = false;
+            } else {
+                markError('r_country', 'err-r-country', false);
+            }
+
+            return valid;
+        }
+
+        // Se ejecuta al presionar "Siguiente paso": solo avanza si los datos del remitente son válidos
+        function goToReceiver() {
+            if (validateSenderTab()) {
+                switchTab('receiver');
+            }
+        }
+
         function sendToWhatsApp(event) {
             event.preventDefault();
-            
+
+            const senderOk = validateSenderTab();
+            const receiverOk = validateReceiverTab();
+
+            if (!senderOk) {
+                switchTab('sender');
+                return;
+            }
+            if (!receiverOk) {
+                switchTab('receiver');
+                return;
+            }
+
             // CONFIGURACIÓN: Reemplaza con tu número (con código de país sin el signo +)
             const phoneNumber = "5491100000000"; 
             
@@ -457,8 +614,19 @@
                             `• País Destino: ${rCountry}\n\n` +
                             `Quiero recibir la cotización, gracias.`;
 
-            const whatsappUrl = `https://whatsapp.com{phoneNumber}&text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const submitTxt = document.getElementById('btn-submit-txt');
+            submitBtn.disabled = true;
+            submitTxt.innerText = translations[currentLang].btnSending;
+
             window.open(whatsappUrl, '_blank');
+
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitTxt.innerText = translations[currentLang].btnSubmit;
+            }, 2000);
         }
     </script>
 </body>
