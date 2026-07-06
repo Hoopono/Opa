@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Página</title>
+<style>
+  :root{
+    --preto: #0a0e14;
+    --azul: #2b5cff;
+    --branco: #f5f7fb;
+    --cinza: #8792a8;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html, body{
+    height:100%;
+    background: var(--preto);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  header{
+    position:fixed;
+    top:0; left:0; right:0;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    padding: 24px 40px;
+    z-index:100;
+  }
+
+  nav ul{
+    display:flex;
+    gap:36px;
+    list-style:none;
+  }
+  nav a{
+    color: var(--cinza);
+    text-decoration:none;
+    font-size:14px;
+    letter-spacing:0.04em;
+    transition: color .25s ease;
+  }
+  nav a:hover{
+    color: var(--branco);
+  }
+
+  @media (max-width:600px){
+    header{ padding:20px 24px; }
+    nav ul{ gap:20px; }
+  }
+
+  /* animação de entrada */
+  #intro{
+    position:fixed;
+    inset:0;
+    background: var(--preto);
+    z-index:1000;
+    overflow:hidden;
+    pointer-events:none;
+  }
+
+  #intro svg#plane{
+    position:absolute;
+    width:56px;
+    height:56px;
+    left:-10%;
+    top:70%;
+    transform: translate(0,0) rotate(-8deg);
+    animation: voar 2.2s cubic-bezier(0.65,0,0.35,1) forwards;
+  }
+
+  #intro svg#trilha{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+  #intro svg#trilha path{
+    fill:none;
+    stroke: var(--azul);
+    stroke-width:1.5;
+    stroke-dasharray: 1500;
+    stroke-dashoffset: 1500;
+    animation: trilha 2.2s cubic-bezier(0.65,0,0.35,1) forwards;
+    opacity:0.6;
+  }
+
+  @keyframes voar{
+    0%{
+      transform: translate(0, 0) rotate(15deg);
+      opacity:1;
+    }
+    15%{
+      transform: translate(15vw, -15vh) rotate(-5deg);
+    }
+    50%{
+      transform: translate(50vw, -55vh) rotate(-45deg);
+      opacity:1;
+    }
+    85%{
+      transform: translate(85vw, -15vh) rotate(-95deg);
+    }
+    100%{
+      transform: translate(100vw, 5vh) rotate(-115deg);
+      opacity:0;
+    }
+  }
+
+  @keyframes trilha{
+    0%{ stroke-dashoffset: 1500; opacity:0.7; }
+    85%{ stroke-dashoffset: 0; opacity:0.5; }
+    100%{ stroke-dashoffset: 0; opacity:0; }
+  }
+
+  #intro{
+    animation: sumir 0.6s ease forwards;
+    animation-delay: 2.1s;
+  }
+
+  @keyframes sumir{
+    to{ opacity:0; visibility:hidden; }
+  }
+
+  body{ overflow-x:hidden; }
+
+  section{
+    max-width:800px;
+    margin: 0 auto;
+    padding: 160px 24px 60px;
+    color: var(--branco);
+  }
+
+  .badge{
+    display:inline-block;
+    font-size:13px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color: var(--azul);
+    font-weight:700;
+    margin-bottom:20px;
+  }
+
+  h1{
+    font-size:clamp(30px,5vw,44px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    margin-bottom:16px;
+  }
+
+  section > p.lead{
+    color: var(--cinza);
+    font-size:17px;
+    max-width:560px;
+  }
+
+  .categoria{
+    max-width:800px;
+    margin:0 auto;
+    padding:100px 24px;
+    border-top:1px solid rgba(245,247,251,0.08);
+  }
+
+  .categoria .n-grande{
+    font-size:15px;
+    font-weight:700;
+    color: var(--azul);
+    letter-spacing:0.08em;
+    margin-bottom:20px;
+  }
+
+  .categoria h2{
+    font-size:clamp(24px,3.5vw,32px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin-bottom:16px;
+    color: var(--branco);
+  }
+
+  .categoria p{
+    color: var(--cinza);
+    font-size:16px;
+    max-width:520px;
+    line-height:1.65;
+  }
+
+  .destaque{
+    max-width:800px;
+    margin:0 auto;
+    padding:40px 24px 120px;
+  }
+  .destaque .caixa{
+    padding:24px;
+    border:1px solid rgba(43,92,255,0.25);
+    border-radius:14px;
+    background: rgba(43,92,255,0.05);
+    color: var(--cinza);
+    font-size:14px;
+    line-height:1.6;
+  }
+  .destaque strong{ color: var(--branco); }
+
+  .contato{
+    max-width:800px;
+    margin:0 auto;
+    padding:100px 24px 140px;
+    border-top:1px solid rgba(245,247,251,0.08);
+    text-align:center;
+  }
+  .contato .n-grande{
+    font-size:15px;
+    font-weight:700;
+    color: var(--azul);
+    letter-spacing:0.08em;
+    margin-bottom:20px;
+  }
+  .contato h2{
+    font-size:clamp(26px,4vw,38px);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    margin-bottom:32px;
+  }
+  .btn-whats{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 32px;
+    border-radius:999px;
+    background: var(--azul);
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:15px;
+    transition: transform .2s ease, box-shadow .3s ease;
+  }
+  .btn-whats:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px 4px rgba(43,92,255,0.4);
+  }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <svg id="trilha" preserveAspectRatio="none" viewBox="0 0 100 100">
+    <path d="M 0 100 Q 50 -40 100 10" vector-effect="non-scaling-stroke"/>
+  </svg>
+  <svg id="plane" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 2L2 9.5L11 12.5L14 21.5L21 2Z" fill="#2b5cff"/>
+    <path d="M11 12.5L14.5 9L21 2L11 12.5Z" fill="#f5f7fb" fill-opacity="0.3"/>
+  </svg>
+</div>
+
+<header>
+  <nav>
+    <ul>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#informacao">Informação</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section id="informacao">
+  <div class="badge">Câmbio sem mistério</div>
+  <h1>Aprenda a enviar dinheiro pro exterior você mesmo, pagando menos taxa.</h1>
+  <p class="lead">Te ensino a abrir e operar sua própria conta internacional (Wise ou equivalente), com cotação real e sem intermediário levando parte do seu dinheiro.</p>
+</section>
+
+<div class="categoria" id="passo-1">
+  <div class="n-grande">01 — Conversa inicial</div>
+  <h2>Entendo sua necessidade</h2>
+  <p>Me chama e conto pra onde você precisa enviar, com que frequência e qual valor médio. Isso define o melhor caminho pra sua conta.</p>
+</div>
+
+<div class="categoria" id="passo-2">
+  <div class="n-grande">02 — Abertura da conta</div>
+  <h2>Você abre sua própria conta</h2>
+  <p>Te acompanho passo a passo abrindo sua conta Wise (ou serviço equivalente), com verificação de identidade feita direto por você, com a plataforma.</p>
+</div>
+
+<div class="categoria" id="passo-3">
+  <div class="n-grande">03 — Transferência guiada</div>
+  <h2>Fazemos a primeira transferência juntos</h2>
+  <p>Faço a transferência junto com você, mostrando cotação, taxa e prazo em tempo real, direto na plataforma.</p>
+</div>
+
+<div class="categoria" id="passo-4">
+  <div class="n-grande">04 — Autonomia</div>
+  <h2>A partir daqui, você já sabe operar sozinho</h2>
+  <p>Sempre com o câmbio do dia, sem depender de terceiros pra mover seu dinheiro.</p>
+</div>
+
+<div class="destaque">
+  <div class="caixa">
+    <strong>O dinheiro nunca passa pela minha conta.</strong> A transferência é sempre feita por você, direto na plataforma internacional, na sua conta verificada em seu nome. Eu cobro apenas pela orientação.
+  </div>
+</div>
+
+<div class="contato" id="contato">
+  <div class="n-grande">Contato</div>
+  <h2>Bora tirar sua dúvida?</h2>
+  <a class="btn-whats" href="https://wa.me/5500000000000" target="_blank" rel="noopener">
+    Chamar no WhatsApp
+  </a>
+</div>
+
+</body>
+</html>
