@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Transfers</title>
+    
+    <!-- Fuentes de Google -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b141a;
+            --card-bg: #111b21;
+            --text-color: #e9edef;
+            --text-muted: #8696a0;
+            --accent-color: #00a884;
+            --accent-hover: #008f72;
+            --border-color: #222e35;
+            --input-bg: #2a3942;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .lang-selector {
+            align-self: flex-end;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lang-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active, .lang-btn:hover {
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .info-card, .form-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        h1 { font-size: 24px; margin-bottom: 12px; color: var(--text-color); }
+        h2 { font-size: 18px; margin: 24px 0 16px 0; color: var(--accent-color); }
+        p { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        .steps-list { list-style: none; }
+        .steps-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .step-num {
+            background: var(--input-bg);
+            color: var(--accent-color);
+            font-weight: 700;
+            min-width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .time-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(0, 168, 132, 0.05);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 4px 12px 12px 4px;
+        }
+
+        .time-box h3 { font-size: 15px; margin-bottom: 6px; }
+
+        .progress-container {
+            background: var(--input-bg);
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 50%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tabs-nav {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .tab-link {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .tab-link.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active {
+            display: block;
+            animation: slideFade 0.4s ease forwards;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        input {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--accent-color); }
+
+        .btn-next, .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-next { background: var(--input-bg); color: var(--text-color); }
+        .btn-next:hover { background: var(--border-color); }
+
+        .btn-submit {
+            background: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: pulseGlow 2s infinite;
+        }
+
+        .btn-submit:hover { background: var(--accent-hover); }
+        .whatsapp-icon { width: 20px; height: 20px; }
+
+        .section-animate {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideFade {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 168, 132, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-selector">
+        <button class="lang-btn active" onclick="changeLanguage('es')">ES</button>
+        <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="changeLanguage('pt')">PT</button>
+    </div>
+
+    <div class="container">
+        <!-- Tarjeta Informativa -->
+        <div class="info-card section-animate">
+            <h1 id="txt-welcome">📌 BIENVENIDO/A</h1>
+            <p id="txt-subwelcome">Si deseas realizar una transferencia internacional, sigue estos sencillos pasos:</p>
+            
+            <h2 id="txt-title-works">🌍 ¿Cómo funciona?</h2>
+            <ul class="steps-list">
+                <li><span class="step-num">1</span> <span id="step-1"><b>Completa el formulario en la página:</b> Ingresa los datos solicitados en las dos pestañas del sitio (Tus datos y Datos del destinatario).</span></li>
+                <li><span class="step-num">2</span> <span id="step-2"><b>Envía la información por WhatsApp:</b> Al finalizar, haz clic en el botón para ser redireccionado automáticamente con tus datos ya cargados.</span></li>
+                <li><span class="step-num">3</span> <span id="step-3"><b>Recibe tu cotización personalizada:</b> Directamente en el chat de WhatsApp te informaremos el tipo de cambio actual y la comisión por el servicio.</span></li>
+                <li><span class="step-num">4</span> <span id="step-4"><b>Realiza el pago por WhatsApp:</b> Te proporcionaremos las cuentas y métodos de pago disponibles directamente en el chat.</span></li>
+                <li><span class="step-num">5</span> <span id="step-5"><b>Envío del dinero:</b> Una vez que verifiquemos tu comprobante de pago, procederemos con el envío internacional.</span></li>
+            </ul>
+
+            <div class="time-box">
+                <h3 id="txt-title-time">⏱️ ¿Cuánto tarda?</h3>
+                <p id="txt-desc-time">En la mayoría de los casos, el dinero llega el mismo día o dentro de 1 a 3 días hábiles. El tiempo exacto depende del país de destino y del proceso de verificación de seguridad.</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta del Formulario -->
+        <div class="form-card section-animate">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="tabs-nav">
+                <button class="tab-link active" id="tab-sender-btn" onclick="switchTab('sender')">Remitente</button>
+                <button class="tab-link" id="tab-receiver-btn" onclick="switchTab('receiver')">Destinatario</button>
+            </div>
+
+            <form id="transferForm" onsubmit="sendToWhatsApp(event)">
+                <!-- Pestaña 1: Remitente -->
+                <div id="tab-sender" class="tab-content active">
+                    <div class="input-group">
+                        <label id="lbl-s-name">Nombre completo</label>
+                        <input type="text" id="s_name" required placeholder="Ej. Juan Pérez">
+                    </div>
+                    <div class="input-group">
+                        <label id="lbl-s-date">Fecha de nacimiento</label>
+                        <input type="date" id="s_date" required>
+                    </div>
+                    <div class="input-group">
+                        <label id="lbl-s-city">Ciudad y país de residencia</label>
+                        <input type="text" id="s_city" required placeholder="Ej. Madrid, España">
+                    </div>
+                    <div class="input-group">
+                        <label id="lbl-s-amount">Monto que deseas enviar</label>
+                        <input type="number" id="s_amount" required placeholder="Ej. 500">
+                    </div>
+                    <button type="button" class="btn-next" onclick="switchTab('receiver')" id="btn-next-txt">Siguiente paso →</button>
+                </div>
+
+                <!-- Pestaña 2: Destinatario -->
+                <div id="tab-receiver" class="tab-content">
+                    <div class="input-group">
+                        <label id="lbl-r-name">Nombre completo del destinatario</label>
+                        <input type="text" id="r_name" required placeholder="Ej. María López">
+                    </div>
+                    <div class="input-group">
+                        <label id="lbl-r-country">País de destino del dinero</label>
+                        <input type="text" id="r_country" required placeholder="Ej. Buenos Aires, Argentina">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <svg class="whatsapp-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.819 9.819 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.45 0-2.88-.38-4.13-1.11l-.3-.18l-3.07.81l.83-2.99l-.2-.32a8.188 8.188 0 0 1-1.25-4.27c0-4.54 3.7-8.23 8.23-8.23m-3.9 4.3c-.2-.44-.4-.45-.59-.45c-.15 0-.32-.02-.5-.02c-.17 0-.46.06-.7.33c-.24.26-.92.9-.92 2.2s.95 2.56 1.08 2.74c.13.17 1.87 2.85 4.53 4c.63.27 1.13.44 1.51.56c.64.2 1.22.17 1.67.1c.51-.07 1.57-.64 1.79-1.26c.22-.61.22-1.14.15-1.25c-.06-.12-.25-.18-.53-.32c-.28-.14-1.65-.81-1.91-.9c-.25-.1-.44-.14-.63.14c-.18.27-.72.9-.88 1.08c-.16.18-.33.2-.61.06c-.28-.14-1.18-.44-2.25-1.39c-.83-.74-1.39-1.65-1.55-1.93c-.16-.28-.02-.43.12-.57c.13-.12.28-.33.42-.49c.14-.16.19-.28.29-.46c.09-.19.05-.35-.02-.5c-.07-.15-.59-1.42-.81-1.95"/></svg>
+                        <span id="btn-submit-txt">Enviar datos y cotizar por WhatsApp</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        const translations = {
+            es: {
+                welcome: "📌 BIENVENIDO/A",
+                subwelcome: "Si deseas realizar una transferencia internacional, sigue estos sencillos pasos:",
+                titleWorks: "🌍 ¿Cómo funciona?",
+                step1: "<b>Completa el formulario en la página:</b> Ingresa los datos solicitados en las dos pestañas del sitio (Tus datos y Datos del destinatario).",
+                step2: "<b>Envía la información por WhatsApp:</b> Al finalizar, haz clic en el botón para ser redireccionado automáticamente con tus datos ya cargados.",
+                step3: "<b>Recibe tu cotización personalizada:</b> Directamente en el chat de WhatsApp te informaremos el tipo de cambio actual y la comisión por el servicio.",
+                step4: "<b>Realiza el pago por WhatsApp:</b> Te proporcionaremos las cuentas y métodos de pago disponibles directamente en el chat.",
+                step5: "<b>Envío del dinero:</b> Una vez que verifiquemos tu comprobante de pago, procederemos con el envío internacional.",
+                titleTime: "⏱️ ¿Cuánto tarda?",
+                descTime: "En la mayoría de los casos, el dinero llega el mismo día o dentro de 1 a 3 días hábiles. El tiempo exacto depende del país de destino y del proceso de verificación de seguridad.",
+                tabSender: "Remitente",
+                tabReceiver: "Destinatario",
+                lblSName: "Nombre completo",
+                lblSDate: "Fecha de nacimiento",
+                lblSCity: "Ciudad y país de residencia",
+                lblSAmount: "Monto que deseas enviar",
+                lblRName: "Nombre completo del destinatario",
+                lblRCountry: "País de destino del dinero",
+                btnNext: "Siguiente paso →",
+                btnSubmit: "Enviar datos y cotizar por WhatsApp"
+            },
+            en: {
+                welcome: "📌 WELCOME",
+                subwelcome: "If you want to make an international money transfer, follow these simple steps:",
+                titleWorks: "🌍 How does it work?",
+                step1: "<b>Complete the form on the page:</b> Enter the required details in both tabs of the site (Your information and Recipient's information).",
+                step2: "<b>Send the information via WhatsApp:</b> Once finished, click the button to be automatically redirected with your data pre-filled.",
+                step3: "<b>Receive your personalized quote:</b> Direct in the WhatsApp chat, we will inform you of the current exchange rate and service fees.",
+                step4: "<b>Make the payment via WhatsApp:</b> We will provide the available bank accounts and payment methods directly in the chat.",
+                step5: "<b>Money transfer:</b> Once your payment receipt is verified, we will proceed with the international transfer.",
+                titleTime: "⏱️ How long does it take?",
+                descTime: "In most cases, the money arrives on the same day or within 1 to 3 business days. The exact time depends on the destination country and the security verification process.",
+                tabSender: "Sender",
+                tabReceiver: "Recipient",
+                lblSName: "Full name",
+                lblSDate: "Date of birth",
+                lblSCity: "City and country of residence",
+                lblSAmount: "Amount to send",
+                lblRName: "Recipient's full name",
+                lblRCountry: "Destination country",
+                btnNext: "Next step →",
+                btnSubmit: "Send data and get quote on WhatsApp"
+            },
+            pt: {
+                welcome: "📌 BEM-VINDO(A)",
+                subwelcome: "Se você deseja fazer uma transferência internacional, siga estes passos simples:",
+                titleWorks: "🌍 Como funciona?",
+                step1: "<b>Preencha o formulário na página:</b> Insira os dados solicitados nas duas abas do site (Seus dados e Dados do destinatário).",
+                step2: "<b>Envie as informações pelo WhatsApp:</b> Ao finalizar, clique no botão para ser redirecionado automaticamente com seus dados já preenchidos.",
+                step3: "<b>Receba sua cotação personalizada:</b> Diretamente no chat do WhatsApp, informaremos a taxa de câmbio atual e a comissão pelo serviço.",
+                step4: "<b>Faça o pagamento pelo WhatsApp:</b> Forneceremos as contas e métodos de pagamento disponíveis diretamente do chat.",
+                step5: "<b>Envio do dinheiro:</b> Assim que o seu comprovante de pagamento for verificado, faremos o envio internacional.",
+                titleTime: "⏱️ Quanto tempo demora?",
+                descTime: "Na maioria dos casos, o dinheiro chega no mesmo dia ou dentro de 1 a 3 dias úteis. O tempo exato depende do país de destino e do processo de verificação de segurança.",
+                tabSender: "Remetente",
+                tabReceiver: "Destinatário",
+                lblSName: "Nome completo",
+                lblSDate: "Data de nascimento",
+                lblSCity: "Cidade e país de residência",
+                lblSAmount: "Valor a enviar",
+                lblRName: "Nome completo do destinatário",
+                lblRCountry: "País de destino do dinheiro",
+                btnNext: "Próximo passo →",
+                btnSubmit: "Enviar dados e cotar pelo WhatsApp"
+            }
+        };
+
+        function changeLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('txt-welcome').innerText = translations[lang].welcome;
+            document.getElementById('txt-subwelcome').innerText = translations[lang].subwelcome;
+            document.getElementById('txt-title-works').innerText = translations[lang].titleWorks;
+            document.getElementById('step-1').innerHTML = translations[lang].step1;
+            document.getElementById('step-2').innerHTML = translations[lang].step2;
+            document.getElementById('step-3').innerHTML = translations[lang].step3;
+            document.getElementById('step-4').innerHTML = translations[lang].step4;
+            document.getElementById('step-5').innerHTML = translations[lang].step5;
+            document.getElementById('txt-title-time').innerText = translations[lang].titleTime;
+            document.getElementById('txt-desc-time').innerText = translations[lang].descTime;
+            
+            document.getElementById('tab-sender-btn').innerText = translations[lang].tabSender;
+            document.getElementById('tab-receiver-btn').innerText = translations[lang].tabReceiver;
+            
+            document.getElementById('lbl-s-name').innerText = translations[lang].lblSName;
+            document.getElementById('lbl-s-date').innerText = translations[lang].lblSDate;
+            document.getElementById('lbl-s-city').innerText = translations[lang].lblSCity;
+            document.getElementById('lbl-s-amount').innerText = translations[lang].lblSAmount;
+            
+            document.getElementById('lbl-r-name').innerText = translations[lang].lblRName;
+            document.getElementById('lbl-r-country').innerText = translations[lang].lblRCountry;
+            
+            document.getElementById('btn-next-txt').innerText = translations[lang].btnNext;
+            document.getElementById('btn-submit-txt').innerText = translations[lang].btnSubmit;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+            
+            if(tab === 'sender') {
+                document.getElementById('tab-sender').classList.add('active');
+                document.getElementById('tab-sender-btn').classList.add('active');
+                document.getElementById('progressBar').style.width = '50%';
+            } else {
+                document.getElementById('tab-receiver').classList.add('active');
+                document.getElementById('tab-receiver-btn').classList.add('active');
+                document.getElementById('progressBar').style.width = '100%';
+            }
+        }
+
+        function sendToWhatsApp(event) {
+            event.preventDefault();
+            
+            // CONFIGURACIÓN: Reemplaza con tu número (con código de país sin el signo +)
+            const phoneNumber = "5491100000000"; 
+            
+            const sName = document.getElementById('s_name').value;
+            const sDate = document.getElementById('s_date').value;
+            const sCity = document.getElementById('s_city').value;
+            const sAmount = document.getElementById('s_amount').value;
+            const rName = document.getElementById('r_name').value;
+            const rCountry = document.getElementById('r_country').value;
+
+            const message = `✨ *Nueva Solicitud de Transferencia* ✨\n\n` +
+                            `👤 *Datos del Remitente:*\n` +
+                            `• Nombre: ${sName}\n` +
+                            `• F. Nacimiento: ${sDate}\n` +
+                            `• Residencia: ${sCity}\n` +
+                            `• Monto a enviar: ${sAmount}\n\n` +
+                            `🎯 *Datos del Destinatario:*\n` +
+                            `• Nombre: ${rName}\n` +
+                            `• País Destino: ${rCountry}\n\n` +
+                            `Quiero recibir la cotización, gracias.`;
+
+            const whatsappUrl = `https://whatsapp.com{phoneNumber}&text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
+
